@@ -3,7 +3,7 @@ module github.com/FedorchukAndrii/echo-go-starter
 go 1.19
 
 require (
-	github.com/labstack/echo/v4 v4.10.0 // indirect
+	github.com/labstack/echo/v4 v4.10.0 // direct
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
