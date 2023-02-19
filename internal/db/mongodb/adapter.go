@@ -335,16 +335,6 @@ func (a *MongoAdp) Update(id uuid.UUID, model iface.Entity) error {
 	return err
 }
 
-// One returns a single record from the database.
-func (a *MongoAdp) One(id uuid.UUID, model iface.Entity) *mongo.SingleResult {
-	return a.DB.Collection(model.GetCollectionName()).FindOne(a.Context, bson.M{"_id": id})
-}
-
-// All returns all records from the database.
-func (a *MongoAdp) All(model iface.Entity) (*mongo.Cursor, error) {
-	return a.DB.Collection(model.GetCollectionName()).Find(a.Context, bson.M{})
-}
-
 // Exists checks if a record exists in the database.
 func (a *MongoAdp) Exists(id uuid.UUID, model iface.Entity) (bool, error) {
 	count, err := a.DB.Collection(model.GetCollectionName()).CountDocuments(a.Context, bson.M{"_id": id})

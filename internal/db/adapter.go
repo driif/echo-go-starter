@@ -6,7 +6,6 @@ import (
 	"github.com/driif/echo-go-starter/internal/db/mongodb"
 	"github.com/driif/echo-go-starter/internal/server/config/dbconf"
 	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Adapter is the interface that wraps the basic methods of a database adapter.
@@ -40,8 +39,6 @@ type Adapter interface {
 	Insert(model iface.Entity) error
 	InsertMany(models []iface.Entity) error
 	Update(id uuid.UUID, model iface.Entity) error
-	One(id uuid.UUID, model iface.Entity) *mongo.SingleResult
-	All(model iface.Entity) (*mongo.Cursor, error)
 	Exists(id uuid.UUID, model iface.Entity) (bool, error)
 	Delete(id uuid.UUID, model iface.Entity) error
 	SoftDelete(id uuid.UUID, model iface.Entity) error
