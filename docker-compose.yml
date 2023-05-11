@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      # Build only image as develop from Dockerfile
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - 8080:8080
+    depends_on:
+      - rethinkdb
+    networks:
+      - app-network
+    environment:
+      - RDB_HOST=rethinkdb
+      - SERVER_LOGGER_PRETTY_PRINT_CONSOLE=true
+      - RDB_DATABASE=chat
+    env_file:
+      - .env
+    # Mount the current directory as a volume to enable hot reloading
+    volumes:
+      - ./:/app
+  rethinkdb:
+    image: rethinkdb:2.4.2-bullseye-slim
+    networks:
+      - app-network
+    ports:
+      - 28015:28015
+      - 29015:29015
+      - 8081:8080
+    volumes:
+      - ./docker_data/rethink_db:/data
+networks:
+  app-network:
+    driver: bridge 
