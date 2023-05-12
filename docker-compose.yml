@@ -10,28 +10,66 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      - rethinkdb
+      - postgres
     networks:
       - app-network
     environment:
-      - RDB_HOST=rethinkdb
-      - SERVER_LOGGER_PRETTY_PRINT_CONSOLE=true
-      - RDB_DATABASE=chat
+      # required: env for main working database, service
+      # default for sql-migrate (target development) and psql cli tool
+      PGDATABASE: &PGDATABASE "development"
+      PGUSER: &PGUSER "dbuser"
+      PGPASSWORD: &PGPASSWORD "dbpass"
+      PGHOST: &PGHOST "postgres"
+      PGPORT: &PGPORT "5432"
+      PGSSLMODE: &PGSSLMODE "disable"
+
+      # optional: env for sql-boiler (ability to generate models out of a "spec" database)
+      # sql-boiler should operate on a "spec" database only
+      PSQL_DBNAME: "spec"
+      PSQL_USER: *PGUSER
+      PSQL_PASS: *PGPASSWORD
+      PSQL_HOST: *PGHOST
+      PSQL_PORT: *PGPORT
+      PSQL_SSLMODE: *PGSSLMODE
+
+      # optional: env for integresql client testing
+      # INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
+
+      # optional: enable pretty print of log output
+      # intended use is for development and debugging purposes only
+      # not recommended to enable on production systems due to performance penalty and loss of parsing ability
+      SERVER_LOGGER_PRETTY_PRINT_CONSOLE: "true"
+
+      # optional: static management secret to easily call http://localhost:8080/-/healthy?mgmt-secret=mgmtpass
+      SERVER_MANAGEMENT_SECRET: "mgmtpass"
     env_file:
       - .env
     # Mount the current directory as a volume to enable hot reloading
     volumes:
       - ./:/app
-  rethinkdb:
-    image: rethinkdb:2.4.2-bullseye-slim
+  postgres:
+    image: postgres:15.3-bullseye # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
+    # ATTENTION
+    # fsync=off, synchronous_commit=off and full_page_writes=off
+    # gives us a major speed up during local development and testing (~30%),
+    # however you should NEVER use these settings in PRODUCTION unless
+    # you want to have CORRUPTED data.
+    # DO NOT COPY/PASTE THIS BLINDLY.
+    # YOU HAVE BEEN WARNED.
+    # Apply some performance improvements to pg as these guarantees are not needed while running locally
+    command: "postgres -c 'shared_buffers=128MB' -c 'fsync=off' -c 'synchronous_commit=off' -c 'full_page_writes=off' -c 'max_connections=100' -c 'client_min_messages=warning'"
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: *PGDATABASE
+      POSTGRES_USER: *PGUSER
+      POSTGRES_PASSWORD: *PGPASSWORD
+    volumes:
+      -  postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
-    ports:
-      - 28015:28015
-      - 29015:29015
-      - 8081:8080
-    volumes:
-      - ./docker_data/rethink_db:/data
 networks:
   app-network:
     driver: bridge 
