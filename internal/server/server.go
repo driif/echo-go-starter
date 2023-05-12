@@ -2,17 +2,12 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/http/pprof"
-	"os"
 	"runtime"
 	"strings"
 
-	"github.com/driif/echo-go-starter/internal/db"
-	"github.com/driif/echo-go-starter/internal/db/mongodb"
 	"github.com/driif/echo-go-starter/internal/server/config"
-	"github.com/driif/echo-go-starter/internal/server/config/dbconf"
 	mdwr "github.com/driif/echo-go-starter/internal/server/net/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,7 +18,6 @@ import (
 type Server struct {
 	// Code here
 	Config config.Server
-	Store  db.Adapter
 	Echo   *echo.Echo
 	Router *Router
 	//Mailer *mailer.Mailer
@@ -45,7 +39,6 @@ func New(config *config.Server) *Server {
 	// Code here
 	s := &Server{
 		Config: *config,
-		Store:  nil,
 		Echo:   nil,
 		Router: nil,
 		//Router: nil,
@@ -57,18 +50,6 @@ func New(config *config.Server) *Server {
 func (s *Server) Ready() bool {
 	// Code here
 	return true
-}
-
-// InitDB initializes the database connection
-func (s *Server) InitMongoDB() {
-	conf := dbconf.ConfigMongo()
-	s.Store = mongodb.NewAdapter()
-	if err := s.Store.Open(conf); err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize MongoDB")
-		s.Store.Close()
-		os.Exit(1)
-	}
-	fmt.Println(s.Store.Version(conf))
 }
 
 // InitPush initializes the push service
@@ -211,9 +192,7 @@ func (s *Server) Start() error {
 
 // Shutdown the server
 func (s *Server) Shutdown(ctx context.Context) error {
-	if err := s.Store.Close(); err != nil {
-		return err
-	}
+
 	// Code here
 	log.Warn().Msg("Shutting down server")
 

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/driif/echo-go-starter/internal/api/router"
-	"github.com/driif/echo-go-starter/internal/db/mongodb"
 	"github.com/driif/echo-go-starter/internal/server"
 	"github.com/driif/echo-go-starter/internal/server/config"
 )
@@ -31,19 +30,10 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config *config.
 
 	s := server.New(config)
 
-	// attach test adapter to server.store
-	s.Store = InitMongoDB(t)
-	if err := s.Initialize(); err != nil {
-		t.Fatalf("failed to initialize server: %v", err)
-	}
-
 	router.InitGroups(s)
 	router.AttachRoutes(s)
 
 	closure(s)
-
-	// close the database connection
-	CloseMongoDB(t, s.Store.(*mongodb.MongoAdp))
 
 	// echo is managed and should close automatically after running the test
 	if err := s.Echo.Shutdown(ctx); err != nil {
