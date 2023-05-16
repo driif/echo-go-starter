@@ -43,3 +43,4 @@ __debug_bin
 # we support overloading ENV vars by parsing a dotenv formatted file
 # this file can be used for local testing (secrets!) but should never be commited into git
 .env.local
+.env
