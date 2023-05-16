@@ -7,4 +7,10 @@ output = "internal/models"
     # As those are supplied via the env, you cannot overwrite the here!
     # see https://github.com/volatiletech/sqlboiler/issues/678
     # see https://github.com/volatiletech/sqlboiler/pull/615
+    dbname = "dbname"
+    host   = "localhost"
+    port   = 5432
+    user   = "dbuser"
+    pass   = "dbpass"
+    schema = "myschema"
     blacklist = ["migrations"]
