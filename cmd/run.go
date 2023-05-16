@@ -51,6 +51,13 @@ func runServer() {
 	fmt.Println("Starting server...")
 	s := server.New(&config)
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := s.InitDB(ctx); err != nil {
+		cancel()
+		log.Fatal().Err(err).Msg("Failed to initialize database")
+	}
+	cancel()
+
 	if err := s.Initialize(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize server")
 		os.Exit(1)
@@ -73,7 +80,7 @@ func runServer() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := s.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {

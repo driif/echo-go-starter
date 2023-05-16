@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"net/http/pprof"
 	"runtime"
@@ -13,6 +14,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
+
+	// Import postgres driver for database/sql package
+	_ "github.com/lib/pq"
 )
 
 // Server is the main struct for the server
@@ -209,15 +213,26 @@ func (s *Server) Initialize() error {
 
 // Starts the server
 func (s *Server) Start() error {
+	if !s.Ready() {
+		return errors.New("server is not ready")
+	}
 	// Code here
 	return s.Echo.Start(s.Config.Echo.ListenAddress)
 }
 
 // Shutdown the server
 func (s *Server) Shutdown(ctx context.Context) error {
-
-	// Code here
 	log.Warn().Msg("Shutting down server")
+
+	if s.DB != nil {
+		log.Debug().Msg("Closing database connection")
+
+		if err := s.DB.Close(); err != nil && !errors.Is(err, sql.ErrConnDone) {
+			log.Error().Err(err).Msg("Failed to close database connection")
+		}
+	}
+
+	log.Debug().Msg("Shutting down echo server")
 
 	return s.Echo.Shutdown(ctx)
 }
