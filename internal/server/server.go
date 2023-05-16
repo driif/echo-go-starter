@@ -56,9 +56,28 @@ func (s *Server) Ready() bool {
 		s.Router != nil
 }
 
-// InitPush initializes the push service
-func (s *Server) InitPush() error {
-	// Code here
+func (s *Server) InitDB(ctx context.Context) error {
+	db, err := sql.Open("postgres", s.Config.Database.ConnectionString())
+	if err != nil {
+		return err
+	}
+
+	if s.Config.Database.MaxOpenConns > 0 {
+		db.SetMaxOpenConns(s.Config.Database.MaxOpenConns)
+	}
+	if s.Config.Database.MaxIdleConns > 0 {
+		db.SetMaxIdleConns(s.Config.Database.MaxIdleConns)
+	}
+	if s.Config.Database.ConnMaxLifetime > 0 {
+		db.SetConnMaxLifetime(s.Config.Database.ConnMaxLifetime)
+	}
+
+	if err := db.PingContext(ctx); err != nil {
+		return err
+	}
+
+	s.DB = db
+
 	return nil
 }
 

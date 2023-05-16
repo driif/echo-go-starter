@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/driif/echo-go-starter/internal/server/config/env"
@@ -79,6 +80,7 @@ type LoggerServer struct {
 
 // Server represents the config of the Server relevant to the app server, containing all the other config structs.
 type Server struct {
+	Database   Database
 	Echo       EchoServer
 	Pprof      PprofServer
 	Paths      PathsServer
@@ -112,6 +114,19 @@ func DefaultServiceConfigFromEnv() Server {
 	}
 
 	return Server{
+		Database: Database{
+			Host:     env.GetEnv("PGHOST", "postgres"),
+			Port:     env.GetEnvAsInt("PGPORT", 5432),
+			Database: env.GetEnv("PGDATABASE", "development"),
+			Username: env.GetEnv("PGUSER", "dbuser"),
+			Password: env.GetEnv("PGPASSWORD", "dbpass"),
+			AdditionalParams: map[string]string{
+				"sslmode": env.GetEnv("PGSSLMODE", "disable"),
+			},
+			MaxOpenConns:    env.GetEnvAsInt("DB_MAX_OPEN_CONNS", runtime.NumCPU()*2),
+			MaxIdleConns:    env.GetEnvAsInt("DB_MAX_IDLE_CONNS", 1),
+			ConnMaxLifetime: time.Second * time.Duration(env.GetEnvAsInt("DB_CONN_MAX_LIFETIME_SEC", 60)),
+		},
 		Echo: EchoServer{
 			Debug:                          env.GetEnvAsBool("SERVER_ECHO_DEBUG", false),
 			ListenAddress:                  env.GetEnv("SERVER_ECHO_LISTEN_ADDRESS", ":8080"),
