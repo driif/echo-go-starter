@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"net/http/pprof"
 	"runtime"
@@ -20,6 +21,7 @@ type Server struct {
 	Config config.Server
 	Echo   *echo.Echo
 	Router *Router
+	DB     *sql.DB
 	//Mailer *mailer.Mailer
 	//Push *push.Service
 }
@@ -39,6 +41,7 @@ func New(config *config.Server) *Server {
 	// Code here
 	s := &Server{
 		Config: *config,
+		DB:     nil,
 		Echo:   nil,
 		Router: nil,
 		//Router: nil,
@@ -48,8 +51,9 @@ func New(config *config.Server) *Server {
 
 // Checks if the server is ready to serve requests
 func (s *Server) Ready() bool {
-	// Code here
-	return true
+	return s.DB != nil &&
+		s.Echo != nil &&
+		s.Router != nil
 }
 
 // InitPush initializes the push service
