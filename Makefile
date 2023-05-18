@@ -1,5 +1,8 @@
 APP_NAME=echo-go-starter
 
+include .env
+export
+
 build: ##- Format, Lint, Test, Build.
 	@$(MAKE) go-build
 	
@@ -134,7 +137,7 @@ sql-spec-reset: ##- (opt) Drop and creates our spec database.
 
 sql-spec-migrate: ##- (opt) Applies migrations/*.sql to our spec database.
 	@echo "make sql-spec-migrate"
-	@sql-migrate up -env spec | xargs -i echo "[spec DB]" {}
+	@sql-migrate up -config=dbconfig.yml -env="spec"
 
 sql-check-structure: sql-check-structure-fk-missing-index sql-check-structure-default-zero-values ##- (opt) Runs make sql-check-structure-*.
 
