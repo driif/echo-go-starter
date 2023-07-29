@@ -90,12 +90,10 @@ sql-drop-all: ##- Wizard to drop ALL databases: spec, development and tracked by
 	@echo "Done. Please run 'make sql-reset && make sql-spec-reset && make sql-spec-migrate' to reinitialize."
 
 # This step is only required to be executed when the "migrations" folder has changed!
-sql: ##- Runs sql format, all sql related checks and finally generates internal/models/*.go.
-	@$(MAKE) sql-format
+sql: ##- Runs sql format, all sql related checks and finally generates internal/models/db/*.go.
 	@$(MAKE) sql-regenerate
 
 sql-regenerate: ##- (opt) Runs sql related checks and finally generates internal/models/*.go.
-	@$(MAKE) sql-check-files
 	@$(MAKE) sql-spec-reset
 	@$(MAKE) sql-spec-migrate
 	@$(MAKE) sql-check-and-generate
@@ -106,58 +104,30 @@ sql-boiler: ##- (opt) Runs sql-boiler introspects the spec db to generate intern
 	@echo "make sql-boiler"
 	sqlboiler psql
 
-sql-format: ##- (opt) Formats all *.sql files.
-	@echo "make sql-format"
-	@find ${PWD} -path "*/tmp/*" -prune -name ".*" -prune -o -type f -iname "*.sql" -print \
-		| grep --invert "/app/dumps/" \
-		| grep --invert "/app/test/" \
-		| xargs -i pg_format --inplace {}
-
-sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt) Check syntax and unnecessary use of NULL keyword.
-
-# check syntax via the real database
-# https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
-sql-check-syntax: ##- (opt) Checks syntax of all *.sql files.
-	@echo "make sql-check-syntax"
-	@find ${PWD} -path "*/tmp/*" -prune -name ".*" -prune -path ./dumps -prune -false -o -type f -iname "*.sql" -print \
-		| grep --invert "/app/dumps/" \
-		| grep --invert "/app/test/" \
-		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
-		| psql -d postgres --quiet -v ON_ERROR_STOP=1
-
-sql-check-migrations-unnecessary-null: ##- (opt) Checks migrations/*.sql for unnecessary use of NULL keywords.
-	@echo "make sql-check-migrations-unnecessary-null"
-	@(grep -R "NULL" ./migrations/ | grep --invert "DEFAULT NULL" | grep --invert "NOT NULL" | grep --invert "WITH NULL" | grep --invert "NULL, " | grep --invert ", NULL" | grep --invert "RETURN NULL" | grep --invert "SET NULL") \
-		&& exit 1 || exit 0
-
 sql-spec-reset: ##- (opt) Drop and creates our spec database.
 	@echo "make sql-spec-reset"
-	@psql --quiet -d postgres -c 'DROP DATABASE IF EXISTS "${PSQL_DBNAME}";'
-	@psql --quiet -d postgres -c 'CREATE DATABASE "${PSQL_DBNAME}" WITH OWNER ${PSQL_USER} TEMPLATE "template0";'
+	@psql --quiet -d postgres -c 'DROP DATABASE IF EXISTS "spec";'
+	@psql --quiet -d postgres -c 'CREATE DATABASE "spec" WITH OWNER ${PGUSER} TEMPLATE "template0";'
 
 sql-spec-migrate: ##- (opt) Applies migrations/*.sql to our spec database.
 	@echo "make sql-spec-migrate"
-	@sql-migrate up -config=dbconfig.yml -env="spec"
+	@sql-migrate up -env spec
 
 sql-check-structure: sql-check-structure-fk-missing-index sql-check-structure-default-zero-values ##- (opt) Runs make sql-check-structure-*.
 
 sql-check-structure-fk-missing-index: ##- (opt) Ensures spec database objects have FK-indices set.
 	@echo "make sql-check-structure-fk-missing-index"
-	@cat scripts/sql/fk_missing_index.sql | psql -qtz0 --no-align -d  "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+	@cat scripts/sql/fk_missing_index.sql | psql -qtz0 --no-align -d  "spec" -v ON_ERROR_STOP=1
 
 sql-check-structure-default-zero-values: ##- (opt) Ensures spec database objects default values match go zero values.
 	@echo "make sql-check-structure-default-zero-values"
-	@cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+	@cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "spec" -v ON_ERROR_STOP=1
 
 dumpfile := /app/dumps/development_$(shell date '+%Y-%m-%d-%H-%M-%S').sql
 sql-dump: ##- Dumps the development database to '/app/dumps/development_YYYY-MM-DD-hh-mm-ss.sql'.
 	@mkdir -p /app/dumps
 	@pg_dump development --format=p --clean --if-exists > $(dumpfile)
 	@echo "Dumped '$(dumpfile)'. Use 'cat $(dumpfile) | psql' to restore"
-
-watch-sql: ##- Watches *.sql files in /migrations and runs 'make sql-regenerate' on modifications.
-	@echo Watching /migrations. Use Ctrl-c to stop a run or exit.
-	watchexec -p -w migrations --exts sql $(MAKE) sql-regenerate
 
 ## Help
 help: ##- Show this help.
