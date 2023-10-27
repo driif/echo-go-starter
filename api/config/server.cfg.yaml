@@ -1,0 +1,6 @@
+package: api
+generate:
+  server: true
+  strict-server: true
+  embedded-spec: true
+output: petstore-server.gen.go
