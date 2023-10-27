@@ -3,8 +3,12 @@ APP_NAME=echo-go-starter
 include .env
 export
 
-oapi:
-	@./scripts/generate-oapi.sh $(APP_NAME) internal/api api  
+gen-oapi:
+	@./scripts/gen-oapi.sh $(OAPI_PATH) internal/types $(OAPI_PATH)
+
+gen-oapi-shop: OAPI_PATH=oapi_shop
+gen-oapi-shop: gen-oapi
+
 
 build: ##- Format, Lint, Test, Build.
 	@$(MAKE) go-build
