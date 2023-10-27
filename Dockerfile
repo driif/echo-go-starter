@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.20.6-bullseye as dev
+FROM golang:1.21.3-bullseye as dev
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -78,7 +78,7 @@ COPY . .
 CMD ["air", "-c", ".air.toml"]
 
 # Build Image
-FROM golang:1.20.4-bullseye as build
+FROM golang:1.21.3-bullseye as build
 
 ENV CGO_ENABLED=0
 
