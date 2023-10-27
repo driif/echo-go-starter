@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/driif/echo-go-starter/internal/api/router"
@@ -15,20 +14,13 @@ func E2e(t *testing.T, closure func(s *server.Server)) {
 	// Code here
 	t.Helper()
 	conf := config.DefaultServiceConfigFromEnv()
-	fmt.Println(conf)
+	conf.Echo.ListenAddress = ":0"
 
-	execClosureNewTestServer(context.Background(), t, &conf, closure)
-}
+	testDB := NewDBInstance(t, conf)
+	testDB.ApplyFixtures(t)
 
-// Executes closure on a new test server with a pre-provided database
-func execClosureNewTestServer(ctx context.Context, t *testing.T, config *config.Server, closure func(s *server.Server)) {
-	t.Helper()
-
-	// https://stackoverflow.com/questions/43424787/how-to-use-next-available-port-in-http-listenandserve
-	// You may use port 0 to indicate you're not specifying an exact port but you want a free, available port selected by the system
-	config.Echo.ListenAddress = ":0"
-
-	s := server.New(config)
+	s := server.New(conf)
+	s.DB = testDB.DB
 
 	router.InitGroups(s)
 	router.AttachRoutes(s)
@@ -36,10 +28,12 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config *config.
 	closure(s)
 
 	// echo is managed and should close automatically after running the test
-	if err := s.Echo.Shutdown(ctx); err != nil {
+	if err := s.Echo.Shutdown(context.TODO()); err != nil {
 		t.Fatalf("failed to shutdown server: %v", err)
 	}
 
+	testDB.Close()
 	// disallow any further refs to managed object after running the test
 	s = nil
+
 }

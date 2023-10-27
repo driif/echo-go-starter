@@ -41,10 +41,10 @@ type Router struct {
 }
 
 // New creates a new server
-func New(config *config.Server) *Server {
+func New(config config.Server) *Server {
 	// Code here
 	s := &Server{
-		Config: *config,
+		Config: config,
 		DB:     nil,
 		Echo:   nil,
 		Router: nil,

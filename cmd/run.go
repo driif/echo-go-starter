@@ -49,7 +49,7 @@ func runServer() {
 	}
 
 	fmt.Println("Starting server...")
-	s := server.New(&config)
+	s := server.New(config)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	if err := s.InitDB(ctx); err != nil {
