@@ -10,15 +10,16 @@ import (
 	"github.com/driif/echo-go-starter/internal/server/config/env"
 )
 
-// The DatabaseMigrationTable name is baked into the binary
+// DatabaseMigrationTable name is baked into the binary
 // This setting should always be in sync with dbconfig.yml, sqlboiler.toml and the live database (e.g. to be able to test producation dumps locally)
 const DatabaseMigrationTable = "migrations"
 
-// The DatabaseMigrationFolder (folder with all *.sql migrations).
+// DatabaseMigrationFolder (folder with all *.sql migrations).
 // This settings should always be in sync with dbconfig.yaml and Dockerfile (the final app stage).
 // It's expected that the migrations folder lives at the root of this project or right next to the app binary.
 var DatabaseMigrationFolder = filepath.Join(env.GetProjectRootDir(), "/migrations")
 
+// Databas is a database configuration
 type Database struct {
 	Host             string
 	Port             int

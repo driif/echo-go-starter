@@ -61,7 +61,7 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 	snapshotAbsPath := filepath.Join(s.location, fmt.Sprintf("%s.golden", snapshotName))
 
 	if s.update || UpdateGoldenGlobal {
-		err := writeSnapshot(snapshotAbsPath, dump)
+		err = writeSnapshot(snapshotAbsPath, dump)
 		if err != nil {
 			t.Fatal(err)
 		}

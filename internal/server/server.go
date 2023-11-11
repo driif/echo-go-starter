@@ -60,6 +60,7 @@ func (s *Server) Ready() bool {
 		s.Router != nil
 }
 
+// InitDB initializes the database connection
 func (s *Server) InitDB(ctx context.Context) error {
 	db, err := sql.Open("postgres", s.Config.Database.ConnectionString())
 	if err != nil {
@@ -211,7 +212,7 @@ func (s *Server) Initialize() error {
 	return nil
 }
 
-// Starts the server
+// Start the server
 func (s *Server) Start() error {
 	if !s.Ready() {
 		return errors.New("server is not ready")

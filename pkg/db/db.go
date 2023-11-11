@@ -9,12 +9,15 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+// TxFn is a function that can be executed in a transaction
 type TxFn func(boil.ContextExecutor) error
 
+// WithTransaction executes the given function in a transaction
 func WithTransaction(ctx context.Context, db *sql.DB, fn TxFn) error {
 	return WithConfiguredTransaction(ctx, db, nil, fn)
 }
 
+// WithConfiguredTransaction executes the given function in a transaction with the given options
 func WithConfiguredTransaction(ctx context.Context, db *sql.DB, options *sql.TxOptions, fn TxFn) error {
 	tx, err := db.BeginTx(ctx, options)
 	if err != nil {
@@ -50,6 +53,7 @@ func WithConfiguredTransaction(ctx context.Context, db *sql.DB, options *sql.TxO
 	return err
 }
 
+// NullStringFromPtr converts a *string to null.String
 func NullIntFromInt64Ptr(i *int64) null.Int {
 	if i == nil {
 		return null.NewInt(0, false)
@@ -57,6 +61,7 @@ func NullIntFromInt64Ptr(i *int64) null.Int {
 	return null.NewInt(int(*i), true)
 }
 
+// NullIntFromInt32Ptr converts a *int32 to null.Int
 func NullFloat32FromFloat64Ptr(f *float64) null.Float32 {
 	if f == nil {
 		return null.NewFloat32(0.0, false)

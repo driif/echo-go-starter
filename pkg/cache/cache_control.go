@@ -7,6 +7,7 @@ import (
 	"github.com/driif/echo-go-starter/pkg/logs"
 )
 
+// CacheControlDirective is a cache control directive
 type CacheControlDirective uint8
 
 const (
@@ -14,11 +15,19 @@ const (
 	CacheControlDirectiveNoStore
 )
 
+// HasDirective returns true if the directive is set
 func (d CacheControlDirective) HasDirective(dir CacheControlDirective) bool { return d&dir != 0 }
-func (d *CacheControlDirective) AddDirective(dir CacheControlDirective)     { *d |= dir }
-func (d *CacheControlDirective) ClearDirective(dir CacheControlDirective)   { *d &= ^dir }
-func (d *CacheControlDirective) ToggleDirective(dir CacheControlDirective)  { *d ^= dir }
 
+// AddDirective adds the directive
+func (d *CacheControlDirective) AddDirective(dir CacheControlDirective) { *d |= dir }
+
+// ClearDirective clears the directive
+func (d *CacheControlDirective) ClearDirective(dir CacheControlDirective) { *d &= ^dir }
+
+// ToggleDirective toggles the directive
+func (d *CacheControlDirective) ToggleDirective(dir CacheControlDirective) { *d ^= dir }
+
+// String returns the string representation of the cache control directive
 func (d CacheControlDirective) String() string {
 	res := make([]string, 0)
 
@@ -32,6 +41,7 @@ func (d CacheControlDirective) String() string {
 	return strings.Join(res, "|")
 }
 
+// ParseCacheControlDirective parses a cache control directive
 func ParseCacheControlDirective(d string) CacheControlDirective {
 	parts := strings.Split(d, "=")
 	switch strings.ToLower(parts[0]) {
@@ -44,6 +54,7 @@ func ParseCacheControlDirective(d string) CacheControlDirective {
 	}
 }
 
+// ParseCacheControlHeader parses a cache control header
 func ParseCacheControlHeader(val string) CacheControlDirective {
 	res := CacheControlDirective(0)
 
@@ -52,9 +63,10 @@ func ParseCacheControlHeader(val string) CacheControlDirective {
 		res = res | ParseCacheControlDirective(dir)
 	}
 
-	return CacheControlDirective(res)
+	return res
 }
 
+// CacheControlDirectiveFromContext returns the cache control directive from the context
 func CacheControlDirectiveFromContext(ctx context.Context) CacheControlDirective {
 	d := ctx.Value(logs.CTXKeyCacheControl)
 	if d == nil {

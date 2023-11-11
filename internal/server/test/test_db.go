@@ -114,7 +114,7 @@ func (db *TestDB) ApplyFixtures(t *testing.T) {
 	err = dbutils.WithTransaction(ctx, db.DB, func(tx boil.ContextExecutor) error {
 		t.Helper()
 		for _, fixture := range inserts {
-			if err := fixture.Insert(ctx, tx, boil.Infer()); err != nil {
+			if err = fixture.Insert(ctx, tx, boil.Infer()); err != nil {
 				return err
 			}
 		}

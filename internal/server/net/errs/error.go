@@ -49,7 +49,7 @@ func NewHTTPErrorWithDetail(code int, errorType, title, detail string) *HTTPErro
 	}
 }
 
-// Returns the error message from HTTPError.
+// Error returns the error message from HTTPError.
 func (e *HTTPError) Error() string {
 	var b strings.Builder
 
@@ -108,7 +108,7 @@ func NewHTTPValidationErrorWithDetail(code int, errorType, title, detail string,
 	}
 }
 
-// Returns the error message from HTTPValidationError.
+// Error returns the error message from HTTPValidationError.
 func (e *HTTPValidationError) Error() string {
 	var b strings.Builder
 

@@ -13,19 +13,23 @@ import (
 )
 
 var (
+	// DefaultHTTPErrorHandlerConfig is the default config for the HTTPErrorHandler
 	DefaultHTTPErrorHandlerConfig = HTTPErrorHandlerConfig{
 		HideInternalServerErrorDetails: false,
 	}
 )
 
+// HTTPErrorHandlerConfig is the config for the HTTPErrorHandler
 type HTTPErrorHandlerConfig struct {
 	HideInternalServerErrorDetails bool
 }
 
+// HTTPErrorHandler is a custom HTTP error handler
 func HTTPErrorHandler() echo.HTTPErrorHandler {
 	return HTTPErrorHandlerWithConfig(DefaultHTTPErrorHandlerConfig)
 }
 
+// HTTPErrorHandlerWithConfig is a custom HTTP error handler with config
 func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHandler {
 	return func(err error, c echo.Context) {
 		var code int
